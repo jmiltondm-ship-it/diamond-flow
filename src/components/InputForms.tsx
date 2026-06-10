@@ -56,10 +56,10 @@ export function InputForms() {
 
       <Tabs defaultValue="massa" className="w-full">
         <TabsList className="grid w-full grid-cols-4 bg-card">
-          <TabsTrigger value="massa" disabled={editing}>Massa & Operação</TabsTrigger>
-          <TabsTrigger value="sortagem" disabled={editing}>Fecho Sortagem</TabsTrigger>
-          <TabsTrigger value="perdas" disabled={editing}>Perdas (Matriz)</TabsTrigger>
-          <TabsTrigger value="tecnico" disabled={editing}>Controlo Técnico</TabsTrigger>
+          <TabsTrigger value="massa">Massa & Operação</TabsTrigger>
+          <TabsTrigger value="sortagem">Fecho Sortagem</TabsTrigger>
+          <TabsTrigger value="perdas">Perdas (Matriz)</TabsTrigger>
+          <TabsTrigger value="tecnico">Controlo Técnico</TabsTrigger>
         </TabsList>
 
         <TabsContent value="massa" className="space-y-4 mt-4">

@@ -36,7 +36,7 @@ export function InputForms() {
   };
 
   return (
-    <form onSubmit={handleMonthlySubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center gap-2">
         {!editing ? (
           <Button type="button" onClick={() => setEditing(true)}>

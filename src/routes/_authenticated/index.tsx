@@ -6,9 +6,11 @@ import { Dashboards } from "@/components/Dashboards";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { Gem, LayoutDashboard, ClipboardEdit, Shield, LogOut } from "lucide-react";
+import { Gem, LayoutDashboard, ClipboardEdit, Shield, LogOut, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+import { DeveloperPanel } from "@/components/DeveloperPanel";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -29,7 +31,8 @@ function App() {
   const { role, setRole } = useDiamond();
   const access = ROLES[role].access;
   const canInput = access.includes("inputs");
-  const [view, setView] = useState<"dash" | "input">(canInput ? "input" : "dash");
+  const { isAdmin } = useIsAdmin();
+  const [view, setView] = useState<"dash" | "input" | "dev">(canInput ? "input" : "dash");
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -61,6 +64,11 @@ function App() {
             <Button variant={view === "dash" ? "default" : "ghost"} size="sm" onClick={() => setView("dash")}>
               <LayoutDashboard size={16} className="mr-1" /> Dashboards
             </Button>
+            {isAdmin && (
+              <Button variant={view === "dev" ? "default" : "ghost"} size="sm" onClick={() => setView("dev")}>
+                <Wrench size={16} className="mr-1" /> Desenvolvedor
+              </Button>
+            )}
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
@@ -81,7 +89,9 @@ function App() {
       </header>
 
       <main className="max-w-[1600px] mx-auto px-4 py-6">
-        {view === "input" && canInput ? <InputForms /> : <Dashboards />}
+        {view === "dev" && isAdmin ? <DeveloperPanel />
+          : view === "input" && canInput ? <InputForms />
+          : <Dashboards />}
       </main>
 
       <footer className="border-t border-border py-4 text-center text-xs text-muted-foreground">

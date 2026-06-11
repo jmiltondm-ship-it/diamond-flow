@@ -6,9 +6,11 @@ import { Dashboards } from "@/components/Dashboards";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { Gem, LayoutDashboard, ClipboardEdit, Shield, LogOut } from "lucide-react";
+import { Gem, LayoutDashboard, ClipboardEdit, Shield, LogOut, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+import { DeveloperPanel } from "@/components/DeveloperPanel";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({

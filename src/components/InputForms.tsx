@@ -23,11 +23,28 @@ export function InputForms() {
   const [selEquip, setSelEquip] = useState<Equipamento>("Crivo 1");
   const [selClasse, setSelClasse] = useState<Classe>("A");
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      setSaving(false);
+      return toast.error("Sessão expirada.");
+    }
+    const { error } = await supabase.from("diamond_snapshots").insert({
+      user_id: userData.user.id,
+      massa: massa as any,
+      recuperacao: recuperacao as any,
+      perdas: perdas as any,
+      tecnico: tecnico as any,
+    });
+    setSaving(false);
+    if (error) return toast.error("Erro ao guardar: " + error.message);
     setEditing(false);
-    toast.success("Dados submetidos com sucesso!");
+    toast.success("Dados guardados na base de dados!");
   };
 
   const handleCancel = () => {

@@ -89,7 +89,9 @@ function App() {
       </header>
 
       <main className="max-w-[1600px] mx-auto px-4 py-6">
-        {view === "input" && canInput ? <InputForms /> : <Dashboards />}
+        {view === "dev" && isAdmin ? <DeveloperPanel />
+          : view === "input" && canInput ? <InputForms />
+          : <Dashboards />}
       </main>
 
       <footer className="border-t border-border py-4 text-center text-xs text-muted-foreground">

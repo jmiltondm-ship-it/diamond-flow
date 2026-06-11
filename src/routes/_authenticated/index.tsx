@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { DiamondProvider, useDiamond, ROLES, Role } from "@/lib/diamond-store";
 import { InputForms } from "@/components/InputForms";
@@ -6,9 +6,11 @@ import { Dashboards } from "@/components/Dashboards";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { Gem, LayoutDashboard, ClipboardEdit, Shield } from "lucide-react";
+import { Gem, LayoutDashboard, ClipboardEdit, Shield, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Diamantes - Central de Tratamento | Monitorização Técnica" },
@@ -28,6 +30,13 @@ function App() {
   const access = ROLES[role].access;
   const canInput = access.includes("inputs");
   const [view, setView] = useState<"dash" | "input">(canInput ? "input" : "dash");
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Sessão terminada");
+    navigate({ to: "/auth", replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,6 +73,9 @@ function App() {
                 ))}
               </SelectContent>
             </Select>
+            <Button variant="ghost" size="sm" onClick={handleSignOut} title="Terminar sessão">
+              <LogOut size={16} />
+            </Button>
           </div>
         </div>
       </header>

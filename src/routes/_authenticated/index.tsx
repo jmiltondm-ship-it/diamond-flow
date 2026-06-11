@@ -31,7 +31,8 @@ function App() {
   const { role, setRole } = useDiamond();
   const access = ROLES[role].access;
   const canInput = access.includes("inputs");
-  const [view, setView] = useState<"dash" | "input">(canInput ? "input" : "dash");
+  const { isAdmin } = useIsAdmin();
+  const [view, setView] = useState<"dash" | "input" | "dev">(canInput ? "input" : "dash");
   const navigate = useNavigate();
 
   const handleSignOut = async () => {

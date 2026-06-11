@@ -64,6 +64,11 @@ function App() {
             <Button variant={view === "dash" ? "default" : "ghost"} size="sm" onClick={() => setView("dash")}>
               <LayoutDashboard size={16} className="mr-1" /> Dashboards
             </Button>
+            {isAdmin && (
+              <Button variant={view === "dev" ? "default" : "ghost"} size="sm" onClick={() => setView("dev")}>
+                <Wrench size={16} className="mr-1" /> Desenvolvedor
+              </Button>
+            )}
           </nav>
 
           <div className="ml-auto flex items-center gap-2">

@@ -30,6 +30,13 @@ export interface TecnicoData {
   identificadas: number; confirmadas: number; investigacao: number;
 }
 
+export interface DiamondSnapshotData {
+  massa: MassaData;
+  recuperacao: Record<Classe, Recuperacao>;
+  perdas: Record<Equipamento, Record<Classe, Perda>>;
+  tecnico: TecnicoData;
+}
+
 interface State {
   massa: MassaData;
   recuperacao: Record<Classe, Recuperacao>;
@@ -39,6 +46,8 @@ interface State {
   setRecuperacao: (c: Classe, r: Partial<Recuperacao>) => void;
   setPerda: (e: Equipamento, c: Classe, p: Partial<Perda>) => void;
   setTecnico: (t: Partial<TecnicoData>) => void;
+  replaceSnapshot: (snapshot: DiamondSnapshotData) => void;
+  resetSnapshot: () => void;
   role: Role;
   setRole: (r: Role) => void;
 }
@@ -70,11 +79,20 @@ const defTec: TecnicoData = {
   identificadas: 0, confirmadas: 0, investigacao: 0,
 };
 
+export function createEmptyDiamondSnapshot(): DiamondSnapshotData {
+  return {
+    massa: { ...defaultMassa },
+    recuperacao: defRec(),
+    perdas: defPerdas(),
+    tecnico: { ...defTec },
+  };
+}
+
 export function DiamondProvider({ children }: { children: ReactNode }) {
-  const [massa, setMassaState] = useState<MassaData>(defaultMassa);
+  const [massa, setMassaState] = useState<MassaData>({ ...defaultMassa });
   const [recuperacao, setRecState] = useState(defRec());
   const [perdas, setPerdasState] = useState(defPerdas());
-  const [tecnico, setTecState] = useState<TecnicoData>(defTec);
+  const [tecnico, setTecState] = useState<TecnicoData>({ ...defTec });
   const [role, setRole] = useState<Role>("admin");
 
   const value: State = {
@@ -83,6 +101,20 @@ export function DiamondProvider({ children }: { children: ReactNode }) {
     setRecuperacao: (c, r) => setRecState((s) => ({ ...s, [c]: { ...s[c], ...r } })),
     setPerda: (e, c, p) => setPerdasState((s) => ({ ...s, [e]: { ...s[e], [c]: { ...s[e][c], ...p } } })),
     setTecnico: (t) => setTecState((s) => ({ ...s, ...t })),
+    replaceSnapshot: (snapshot) => {
+      const next = structuredClone(snapshot);
+      setMassaState(next.massa);
+      setRecState(next.recuperacao);
+      setPerdasState(next.perdas);
+      setTecState(next.tecnico);
+    },
+    resetSnapshot: () => {
+      const empty = createEmptyDiamondSnapshot();
+      setMassaState(empty.massa);
+      setRecState(empty.recuperacao);
+      setPerdasState(empty.perdas);
+      setTecState(empty.tecnico);
+    },
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

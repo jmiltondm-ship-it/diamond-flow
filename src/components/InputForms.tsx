@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useDiamond, CLASSES, EQUIPAMENTOS, Classe, Equipamento } from "@/lib/diamond-store";
+import { useEffect, useMemo, useState } from "react";
+import { useDiamond, CLASSES, EQUIPAMENTOS, Classe, Equipamento, createEmptyDiamondSnapshot, type DiamondSnapshotData } from "@/lib/diamond-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Pencil, Save, X } from "lucide-react";
+import { LoaderCircle, Pencil, Save, X } from "lucide-react";
 
 function NumField({ label, value, onChange, suffix, disabled }: { label: string; value: number; onChange: (n: number) => void; suffix?: string; disabled?: boolean }) {
   return (
@@ -19,11 +19,88 @@ function NumField({ label, value, onChange, suffix, disabled }: { label: string;
 }
 
 export function InputForms() {
-  const { massa, setMassa, recuperacao, setRecuperacao, perdas, setPerda, tecnico, setTecnico } = useDiamond();
+  const { massa, setMassa, recuperacao, setRecuperacao, perdas, setPerda, tecnico, setTecnico, replaceSnapshot, resetSnapshot } = useDiamond();
   const [selEquip, setSelEquip] = useState<Equipamento>("Crivo 1");
   const [selClasse, setSelClasse] = useState<Classe>("A");
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [snapshotId, setSnapshotId] = useState<string | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<DiamondSnapshotData>(createEmptyDiamondSnapshot());
+
+  const currentSnapshot = useMemo<DiamondSnapshotData>(() => ({
+    massa,
+    recuperacao,
+    perdas,
+    tecnico,
+  }), [massa, recuperacao, perdas, tecnico]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLatestSnapshot = async () => {
+      setLoading(true);
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data: userData } = await supabase.auth.getUser();
+
+      if (!userData.user) {
+        if (!cancelled) {
+          resetSnapshot();
+          setSavedSnapshot(createEmptyDiamondSnapshot());
+          setSnapshotId(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("diamond_snapshots")
+        .select("id, massa, recuperacao, perdas, tecnico")
+        .eq("user_id", userData.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        toast.error("Erro ao carregar dados: " + error.message);
+        const empty = createEmptyDiamondSnapshot();
+        replaceSnapshot(empty);
+        setSavedSnapshot(empty);
+        setSnapshotId(null);
+        setLoading(false);
+        return;
+      }
+
+      if (!data) {
+        const empty = createEmptyDiamondSnapshot();
+        replaceSnapshot(empty);
+        setSavedSnapshot(empty);
+        setSnapshotId(null);
+        setLoading(false);
+        return;
+      }
+
+      const latestSnapshot: DiamondSnapshotData = {
+        massa: data.massa as unknown as DiamondSnapshotData["massa"],
+        recuperacao: data.recuperacao as unknown as DiamondSnapshotData["recuperacao"],
+        perdas: data.perdas as unknown as DiamondSnapshotData["perdas"],
+        tecnico: data.tecnico as unknown as DiamondSnapshotData["tecnico"],
+      };
+
+      replaceSnapshot(latestSnapshot);
+      setSavedSnapshot(structuredClone(latestSnapshot));
+      setSnapshotId(data.id);
+      setLoading(false);
+    };
+
+    void loadLatestSnapshot();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,23 +111,44 @@ export function InputForms() {
       setSaving(false);
       return toast.error("Sessão expirada.");
     }
-    const { error } = await supabase.from("diamond_snapshots").insert({
-      user_id: userData.user.id,
-      massa: massa as any,
-      recuperacao: recuperacao as any,
-      perdas: perdas as any,
-      tecnico: tecnico as any,
-    });
+    const payload = {
+      massa: currentSnapshot.massa as any,
+      recuperacao: currentSnapshot.recuperacao as any,
+      perdas: currentSnapshot.perdas as any,
+      tecnico: currentSnapshot.tecnico as any,
+    };
+
+    const mutation = snapshotId
+      ? supabase.from("diamond_snapshots").update(payload).eq("id", snapshotId).eq("user_id", userData.user.id)
+      : supabase.from("diamond_snapshots").insert({ user_id: userData.user.id, ...payload }).select("id").single();
+
+    const { data, error } = await mutation;
+
     setSaving(false);
     if (error) return toast.error("Erro ao guardar: " + error.message);
+
+    if (!snapshotId && data && "id" in data) {
+      setSnapshotId(data.id as string);
+    }
+
+    setSavedSnapshot(structuredClone(currentSnapshot));
     setEditing(false);
     toast.success("Dados guardados na base de dados!");
   };
 
   const handleCancel = () => {
+    replaceSnapshot(savedSnapshot);
     setEditing(false);
     toast.info("Edição cancelada.");
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[280px] items-center justify-center text-muted-foreground">
+        <LoaderCircle className="mr-2 animate-spin" size={18} /> A carregar formulário...
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

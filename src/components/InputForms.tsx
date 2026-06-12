@@ -83,10 +83,10 @@ export function InputForms() {
       }
 
       const latestSnapshot: DiamondSnapshotData = {
-        massa: data.massa as DiamondSnapshotData["massa"],
-        recuperacao: data.recuperacao as DiamondSnapshotData["recuperacao"],
-        perdas: data.perdas as DiamondSnapshotData["perdas"],
-        tecnico: data.tecnico as DiamondSnapshotData["tecnico"],
+        massa: data.massa as unknown as DiamondSnapshotData["massa"],
+        recuperacao: data.recuperacao as unknown as DiamondSnapshotData["recuperacao"],
+        perdas: data.perdas as unknown as DiamondSnapshotData["perdas"],
+        tecnico: data.tecnico as unknown as DiamondSnapshotData["tecnico"],
       };
 
       replaceSnapshot(latestSnapshot);
@@ -100,7 +100,7 @@ export function InputForms() {
     return () => {
       cancelled = true;
     };
-  }, [replaceSnapshot, resetSnapshot]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

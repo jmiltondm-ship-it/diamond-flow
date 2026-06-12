@@ -62,7 +62,7 @@ export function InputForms() {
         ) : (
           <>
             <Button type="submit" disabled={saving}>
-              <Save size={16} className="mr-1" /> {saving ? "A guardar..." : "Submeter"}
+              <Save size={16} className="mr-1" /> {saving ? "A guardar..." : "Guardar"}
             </Button>
             <Button type="button" variant="secondary" onClick={handleCancel}>
               <X size={16} className="mr-1" /> Cancelar

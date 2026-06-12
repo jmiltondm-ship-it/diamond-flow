@@ -46,28 +46,28 @@ interface State {
 const Ctx = createContext<State | null>(null);
 
 const defaultMassa: MassaData = {
-  tonAlimentadas: 1200, tonTratadas: 1180, concentrado: 18,
-  crivo1Plus1: 12, crivo1Minus1: 5, crivo1Ef: 92,
-  crivo2Plus1: 14, crivo2Minus1: 7, crivo2Ef: 88,
-  dms1Plus6: 8, dms1Mid: 85, dms1Minus1: 7,
-  dms2Plus6: 12, dms2Mid: 78, dms2Minus1: 10,
+  tonAlimentadas: 0, tonTratadas: 0, concentrado: 0,
+  crivo1Plus1: 0, crivo1Minus1: 0, crivo1Ef: 0,
+  crivo2Plus1: 0, crivo2Minus1: 0, crivo2Ef: 0,
+  dms1Plus6: 0, dms1Mid: 0, dms1Minus1: 0,
+  dms2Plus6: 0, dms2Mid: 0, dms2Minus1: 0,
 };
 const defRec = (): Record<Classe, Recuperacao> => ({
-  A: { pedras: 42, quilates: 28.5, valor: 145000 },
-  B: { pedras: 78, quilates: 19.2, valor: 88000 },
-  C: { pedras: 145, quilates: 12.8, valor: 42000 },
+  A: { pedras: 0, quilates: 0, valor: 0 },
+  B: { pedras: 0, quilates: 0, valor: 0 },
+  C: { pedras: 0, quilates: 0, valor: 0 },
 });
 const defPerdas = (): Record<Equipamento, Record<Classe, Perda>> => {
-  const make = (m: number): Record<Classe, Perda> => ({
-    A: { pedras: 1 * m, quilates: 0.8 * m, valor: 4200 * m },
-    B: { pedras: 3 * m, quilates: 0.6 * m, valor: 2400 * m },
-    C: { pedras: 6 * m, quilates: 0.4 * m, valor: 1100 * m },
+  const make = (): Record<Classe, Perda> => ({
+    A: { pedras: 0, quilates: 0, valor: 0 },
+    B: { pedras: 0, quilates: 0, valor: 0 },
+    C: { pedras: 0, quilates: 0, valor: 0 },
   });
-  return { "Crivo 1": make(1), "Crivo 2": make(1.4), "DMS 1": make(0.8), "DMS 2": make(1.2) };
+  return { "Crivo 1": make(), "Crivo 2": make(), "DMS 1": make(), "DMS 2": make() };
 };
 const defTec: TecnicoData = {
-  recolhidas: 24, tratadas: 18, pendentes: 6, tempoResposta: 4.2,
-  identificadas: 8, confirmadas: 5, investigacao: 3,
+  recolhidas: 0, tratadas: 0, pendentes: 0, tempoResposta: 0,
+  identificadas: 0, confirmadas: 0, investigacao: 0,
 };
 
 export function DiamondProvider({ children }: { children: ReactNode }) {
